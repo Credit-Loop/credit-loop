@@ -4,7 +4,7 @@
 
 ### Folder Structure
 
-```
+```plaintext
 contracts/
 ├── diamond/
 │   ├── interfaces/
