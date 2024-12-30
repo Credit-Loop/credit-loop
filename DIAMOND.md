@@ -2,6 +2,38 @@
 
 ## Core Components
 
+### Folder Structure
+
+```
+contracts/
+├── diamond/
+│   ├── interfaces/
+│   │   ├── IDiamondCut.sol
+│   │   ├── IDiamondLoupe.sol
+│   │   └── core/
+│   │       ├── IDebtFacet.sol
+│   │       ├── IChainFacet.sol
+│   │       ├── IPaymentFacet.sol
+│   │       ├── IAccessControlFacet.sol
+│   │       └── ITaxFacet.sol
+│   ├── libraries/
+│   │   └── LibDiamond.sol
+│   ├── storage/
+│   │   ├── LibDebtStorage.sol
+│   │   ├── LibChainStorage.sol
+│   │   ├── LibAccessStorage.sol
+│   │   └── LibTaxStorage.sol
+│   ├── facets/
+│   │   ├── DiamondCutFacet.sol
+│   │   ├── DiamondLoupeFacet.sol
+│   │   ├── DebtFacet.sol
+│   │   ├── ChainFacet.sol
+│   │   ├── PaymentFacet.sol
+│   │   ├── AccessControlFacet.sol
+│   │   └── TaxFacet.sol
+│   └── Diamond.sol
+```
+
 ### Diamond Contract
 - Main proxy contract implementing ERC-2535
 - Handles function delegation
@@ -54,25 +86,38 @@
 
 ## Storage Layout
 
-```solidity
-struct DebtChainStorage {
-// Mappings
-mapping(bytes32 => Debt) debts;
-mapping(address => mapping(address => bytes32)) debtorToCreditorDebt;
-mapping(bytes32 => Chain) chains;
-mapping(address => bool) kycVerified;
-// Chain-specific
-mapping(bytes32 => address[]) chainParticipants;
-mapping(bytes32 => mapping(address => bool)) chainConsents;
-// Tax-related
-mapping(address => uint256) taxLiabilities;
-mapping(address => uint256) taxPaid;
-// Access Control
-mapping(address => bool) administrators;
-mapping(address => mapping(bytes4 => bool)) functionAccess;
-}
+Each facet has its own isolated storage using the Diamond Storage pattern:
 
+- `LibDebtStorage`: Manages debt-related storage (debts, payments)
+- `LibChainStorage`: Manages chain-related storage (chains, participants)
+- `LibAccessStorage`: Manages access control storage (roles, KYC)
+- `LibTaxStorage`: Manages tax-related storage (rates, balances)
+
+Each storage library:
+1. Defines its own storage struct
+2. Uses a unique storage position via keccak256
+3. Provides a function to access its storage slot
+
+Example:
+```solidity
+library LibDebtStorage {
+    bytes32 constant DEBT_STORAGE_POSITION = keccak256("debtchain.debt.storage");
+
+    function debtStorage() internal pure returns (DebtStorage storage ds) {
+        bytes32 position = DEBT_STORAGE_POSITION;
+        assembly {
+            ds.slot := position
+        }
+    }
+}
 ```
+
+This pattern ensures:
+- Storage isolation between facets
+- Upgradeable storage layout
+- Reusable facets
+- Clear separation of concerns
+
 ## Interface Definitions
 ```solidity
 solidity
@@ -139,3 +184,4 @@ function getComplianceStatus(address account) external view returns (bool);
    - Security audits
    - Integration testing
    - Performance testing
+
