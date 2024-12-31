@@ -60,6 +60,9 @@
    - Replaced
    - Expired
 
+
+   
+
 4. **Lifecycle Management**
    - Initial verification
    - Status tracking
@@ -68,6 +71,49 @@
    - History maintenance
 
 ## System Flows
+
+```mermaid
+sequenceDiagram
+ participant A as Alice (Tenant)
+    participant B as Bob (Landlord)
+    participant C as Charlie (Creditor)
+    participant S as Smart Contract
+    participant T as Tax Authority
+    participant O as Optimizer
+
+    Note over A,C: Phase 1: Initial Setup & Validation
+    A->>S: Creates Debt (100 DAI to B)
+    B->>S: Creates Debt (80 DAI to C)
+    S->>S: Validates KYC for all parties
+    S->>S: Auto-detects chain (A->B->C)
+    S->>O: Requests chain optimization
+    O->>S: Returns optimal path
+
+    Note over A,C: Phase 2: Chain Resolution
+    C->>S: Requests chain resolution
+    B->>S: Consents to transition
+    S->>S: Calculates B's tax obligations on A's payment
+
+    Note over A,C: Phase 3: Payment & Settlement
+    A->>S: Initiates payment (100 DAI)
+    S->>S: Calculates tax for B's income
+    S->>T: Routes B's tax portion
+
+    alt A's debt > B's debt to C
+        Note over A,C: Case 1: A owes 100, B owes 80
+        S->>C: Routes 80 DAI
+        S->>B: Routes remaining (100 - tax - 80)
+    else A's debt <= B's debt to C
+        Note over A,C: Case 2: A owes 80, B owes 100
+        S->>C: Routes full remaining amount (80 - tax)
+        Note over B: B still owes remaining to C
+    end
+
+    Note over A,C: Phase 4: Status Updates
+    S->>S: Updates debt statuses
+    S->>B: Updates tax liability records
+    S->>S: Updates chain state
+```
 
 ### 1. User Registration
 1. User connects wallet
