@@ -28,17 +28,7 @@ graph TB
             CO[ChainOptimizerFacet]
         end
     end
-    
-    subgraph ExternalSystems["External Systems"]
-        direction LR
-        TS[Tax Service]
-        OS[Optimization Service]
-        IS[Identity Service]
-        DS[Document Verification Service]
-        AI[AI Document Analysis]
-        ZK[ZK Proof Service]
-    end
-    
+
     subgraph Storage["Diamond Storage"]
         direction LR
         DS[(DebtStorage)]
@@ -46,6 +36,16 @@ graph TB
         AS[(AccessStorage)]
         TSt[(TaxStorage)]
         VS[(VerificationStorage)]
+    end
+    
+    subgraph ExternalSystems["External Systems"]
+        direction LR
+        TS[Tax Service]
+        OS[Optimization Service]
+        IS[Identity Service]
+        DS_EXT[Document Verification Service]
+        AI[AI Document Analysis]
+        ZK[ZK Proof Service]
     end
 
     %% User flows through Diamond
@@ -69,7 +69,7 @@ graph TB
     
     %% Verification Flows
     IV <-->|"Verify Identity"| IS
-    DV <-->|"Verify Documents"| DS
+    DV <-->|"Verify Documents"| DS_EXT
     DV <-->|"AI Analysis"| AI
     DV <-->|"ZK Proofs"| ZK
     
@@ -99,11 +99,11 @@ graph TB
     class DF,CF,PF,AF,TF coreStyle
     class IV,DV verificationStyle
     class TO,CO oracleStyle
-    class TS,OS,IS,DS,AI,ZK externalStyle
+    class TS,OS,IS,DS_EXT,AI,ZK externalStyle
     class DS,CS,AS,TSt,VS storageStyle
     class Diamond proxyStyle
     class User,Admin actorStyle
-
+```
 # System Flow Description
 
 ## Verification System
