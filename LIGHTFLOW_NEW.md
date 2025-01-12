@@ -17,177 +17,93 @@
 5. Tax Service
 6. Chain Optimization Service
 
-## Verification System
+## Detailed Flow Diagram
 
-### Identity Verification
-1. **Purpose**
-   - One-time wallet verification
-   - Basic system access control
-   - Participant validation
+```mermaid
+sequenceDiagram
+    participant Users as Users (A/B/C)
+    participant Diamond as Diamond Contract
+    participant CoreF as Core Facets
+    participant VerifF as Verification Facets
+    participant OracleF as Oracle Facets
+    participant ExtServ as External Services
+    
+    Note over Users,ExtServ: Phase 1: Identity Verification
+    Users->>Diamond: Connect wallet
+    Diamond->>VerifF: Request identity verification
+    VerifF->>ExtServ: Verify identity (KYC)
+    ExtServ-->>VerifF: Identity verified
+    VerifF-->>Diamond: Cache verification status
+    Diamond-->>Users: Access granted
 
-2. **Process**
-   - User completes KYC through external service
-   - Identity service verifies documents
-   - System caches verification status
-   - Status enables system access
+    Note over Users,ExtServ: Phase 2: Debt Creation & Document Verification
+    Users->>Diamond: Submit debt documents
+    Diamond->>VerifF: Request document verification
+    VerifF->>ExtServ: Extract terms (AI Analysis)
+    ExtServ-->>VerifF: Terms extracted
+    VerifF->>ExtServ: Generate ZK proof
+    ExtServ-->>VerifF: ZK proof generated
+    VerifF-->>Diamond: Document verified
+    Diamond->>CoreF: Create debt with verified terms
 
-3. **States**
-   - Unverified
-   - Pending Verification
-   - Verified
-   - Expired
-   - Revoked
+    Note over Users,ExtServ: Phase 3: Chain Detection & Optimization
+    CoreF->>CoreF: Auto-detect potential chain
+    Diamond->>OracleF: Request chain optimization
+    OracleF->>ExtServ: Optimize chain path
+    ExtServ-->>OracleF: Return optimal path
+    OracleF-->>Diamond: Update chain configuration
 
-### Document Verification
-1. **Purpose**
-   - Verify debt agreement authenticity
-   - Extract and validate terms
-   - Ensure privacy of sensitive data
-   - Track document lifecycle
+    Note over Users,ExtServ: Phase 4: Chain Resolution & Consent
+    Users->>Diamond: Request chain resolution
+    Diamond->>CoreF: Validate chain participants
+    CoreF->>VerifF: Check identity statuses
+    VerifF-->>CoreF: Identities confirmed
+    Users->>Diamond: Provide consent
+    Diamond->>CoreF: Record consent
 
-2. **Process**
-   - Document submission
-   - AI-powered term extraction
-   - Authenticity verification
-   - ZK proof generation
-   - Status updates and tracking
+    Note over Users,ExtServ: Phase 5: Payment Processing & Tax
+    Users->>Diamond: Initiate payment
+    Diamond->>OracleF: Calculate tax obligations
+    OracleF->>ExtServ: Get tax rates
+    ExtServ-->>OracleF: Return tax calculations
+    Diamond->>CoreF: Process payment
+    CoreF->>ExtServ: Route tax payment
+    CoreF->>Users: Route remaining funds
 
-3. **Document States**
-   - Pending Verification
-   - Verified
-   - Failed Verification
-   - Revoked
-   - Replaced
-   - Expired
+    Note over Users,ExtServ: Phase 6: Status Updates
+    Diamond->>CoreF: Update debt statuses
+    CoreF->>VerifF: Update document states
+    Diamond->>OracleF: Update tax records
+    Diamond-->>Users: Notify completion
 
-4. **Lifecycle Management**
-   - Initial verification
-   - Status tracking
-   - Revocation handling
-   - Document replacement
-   - History maintenance
+    Note over Users,ExtServ: All interactions through Diamond Proxy
+```
 
-## System Flows
+## Key Points
 
-### 1. User Registration
-1. User connects wallet
-2. Completes identity verification
-3. System caches verification status
-4. Access granted upon success
+1. **User Interaction**
+   - All user interactions go through the Diamond proxy
+   - Diamond delegates to appropriate facets
 
-### 2. Debt Creation
-1. User submits debt documents
-2. System verifies user identity
-3. Document verification process:
-   - Term extraction
-   - Authenticity check
-   - ZK proof generation
-4. Debt created with verified terms
-5. Document status tracked
+2. **Facet Organization**
+   - Core Facets: Basic debt and chain operations
+   - Verification Facets: Identity and document verification
+   - Oracle Facets: External service integration
 
-### 3. Chain Formation
-1. Verify all participant identities
-2. Validate all debt documents
-3. Check document statuses
-4. Optimize chain configuration
-5. Create chain with verified data
+3. **External Services**
+   - Identity verification (KYC)
+   - Document analysis (AI)
+   - Privacy (ZK Proofs)
+   - Tax calculations
+   - Chain optimization
 
-### 4. Payment Processing
-1. Verify participant identities
-2. Validate payment against documents
-3. Calculate taxes
-4. Process payment
-5. Update chain status
+4. **Security Flow**
+   - Identity verification required first
+   - Document verification before debt creation
+   - Consent required for chain resolution
+   - Privacy preserved through ZK proofs
 
-## Security Measures
-
-### Identity Security
-1. External KYC service integration
-2. Cached verification status
-3. Regular status updates
-4. Revocation capability
-5. Access control enforcement
-
-### Document Security
-1. AI-powered verification
-2. ZK proofs for privacy
-3. Document state tracking
-4. Revocation handling
-5. Version control
-6. History maintenance
-
-### Transaction Security
-1. Identity verification checks
-2. Document validation
-3. Terms compliance
-4. Payment verification
-5. State updates
-
-## Error Handling
-
-### Verification Errors
-1. Identity verification failure
-2. Document verification failure
-3. Term extraction issues
-4. ZK proof generation failure
-5. Status update errors
-
-### Document Lifecycle Errors
-1. Invalid document submission
-2. Failed verification
-3. Revocation issues
-4. Replacement errors
-5. Expiry handling
-
-### System Response
-1. Clear error messages
-2. Failure reason tracking
-3. Recovery procedures
-4. Status rollbacks
-5. Event logging
-
-## Event System
-
-### Identity Events
-1. Verification Requested
-2. Verification Complete
-3. Status Updated
-4. Identity Expired
-5. Identity Revoked
-
-### Document Events
-1. Submission
-2. Verification Status
-3. Term Extraction
-4. Revocation
-5. Replacement
-6. Expiry
-
-### System Events
-1. Debt Creation
-2. Chain Formation
-3. Payment Processing
-4. Error Occurrence
-5. Status Updates
-
-## Storage Management
-
-### Identity Storage
-1. Verification status
-2. Timestamps
-3. Request history
-4. Access permissions
-
-### Document Storage
-1. Document hashes
-2. Verification status
-3. Term proofs
-4. Version history
-5. Revocation records
-
-### System Storage
-1. Debt records
-2. Chain configurations
-3. Payment history
-4. Tax calculations
-5. System parameters 
+5. **Payment Flow**
+   - Tax calculation before routing
+   - Automatic payment splitting
+   - Status updates across all components 
